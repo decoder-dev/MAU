@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class RestoreService { private readonly ApplicationDbContext _context; public RestoreService(ApplicationDbContext context) { _context = context; } } }

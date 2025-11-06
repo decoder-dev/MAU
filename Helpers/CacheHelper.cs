@@ -1,0 +1,1 @@
+﻿namespace NetworkMonitoringSystem.Helpers { public static class CacheHelper { public static void Process() { } } }

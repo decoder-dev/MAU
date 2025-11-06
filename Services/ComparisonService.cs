@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class ComparisonService { private readonly ApplicationDbContext _context; public ComparisonService(ApplicationDbContext context) { _context = context; } } }

@@ -1,0 +1,1 @@
+﻿namespace NetworkMonitoringSystem.Helpers { public static class TemplateHelper { public static void Process() { } } }

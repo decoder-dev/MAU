@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class StatisticsService { private readonly ApplicationDbContext _context; public StatisticsService(ApplicationDbContext context) { _context = context; } } }

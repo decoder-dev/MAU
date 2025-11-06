@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class EmailService { private readonly ApplicationDbContext _context; public EmailService(ApplicationDbContext context) { _context = context; } } }

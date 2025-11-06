@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class CredentialService { private readonly ApplicationDbContext _context; public CredentialService(ApplicationDbContext context) { _context = context; } } }

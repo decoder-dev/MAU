@@ -1,0 +1,1 @@
+﻿namespace NetworkMonitoringSystem.Helpers { public static class NotificationHelper { public static void Process() { } } }

@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class ScheduleService { private readonly ApplicationDbContext _context; public ScheduleService(ApplicationDbContext context) { _context = context; } } }

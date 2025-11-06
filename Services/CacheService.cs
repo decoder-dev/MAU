@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class CacheService { private readonly ApplicationDbContext _context; public CacheService(ApplicationDbContext context) { _context = context; } } }

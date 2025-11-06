@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class DashboardService { private readonly ApplicationDbContext _context; public DashboardService(ApplicationDbContext context) { _context = context; } } }

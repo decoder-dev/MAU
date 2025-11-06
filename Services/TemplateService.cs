@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class TemplateService { private readonly ApplicationDbContext _context; public TemplateService(ApplicationDbContext context) { _context = context; } } }

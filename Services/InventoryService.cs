@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class InventoryService { private readonly ApplicationDbContext _context; public InventoryService(ApplicationDbContext context) { _context = context; } } }

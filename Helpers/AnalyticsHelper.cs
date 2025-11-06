@@ -1,0 +1,1 @@
+﻿namespace NetworkMonitoringSystem.Helpers { public static class AnalyticsHelper { public static void Process() { } } }

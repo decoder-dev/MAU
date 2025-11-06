@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class ValidationService { private readonly ApplicationDbContext _context; public ValidationService(ApplicationDbContext context) { _context = context; } } }

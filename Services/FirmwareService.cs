@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class FirmwareService { private readonly ApplicationDbContext _context; public FirmwareService(ApplicationDbContext context) { _context = context; } } }

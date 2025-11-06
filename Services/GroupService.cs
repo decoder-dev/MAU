@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class GroupService { private readonly ApplicationDbContext _context; public GroupService(ApplicationDbContext context) { _context = context; } } }

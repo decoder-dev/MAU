@@ -1,0 +1,1 @@
+using NetworkMonitoringSystem.Core.Data; namespace NetworkMonitoringSystem.Services { public class TopologyService { private readonly ApplicationDbContext _context; public TopologyService(ApplicationDbContext context) { _context = context; } } }

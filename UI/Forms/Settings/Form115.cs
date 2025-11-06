@@ -1,0 +1,11 @@
+﻿using System;
+using System.Windows.Forms;
+
+namespace NetworkMonitoringSystem.Forms.Settings
+{
+    public partial class Form115 : Form
+    {
+        public Form115() { InitializeComponent(); }
+        private void InitializeComponent() { this.Text = "Settings - Form 115"; this.Size = new Size(600, 400); }
+    }
+}
