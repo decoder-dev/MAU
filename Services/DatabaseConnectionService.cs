@@ -55,27 +55,6 @@ namespace NetworkMonitoringSystem.Services
             return _connectionString;
         }
 
-        /// <summary>
-        /// Проверить доступность сервера MySQL
-        /// </summary>
-        public static bool IsServerReachable(string server, int port = 3306)
-        {
-            // Проверка доступности хоста
-            try
-            {
-                using var tcpClient = new TcpClient();
-                var result = tcpClient.BeginConnect(server, port, null, null);
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(3));
-                if (!success)
-                    return false;
-                tcpClient.EndConnect(result);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         /// <summary>
         /// Проверить подключение к серверной БД
@@ -122,7 +101,7 @@ namespace NetworkMonitoringSystem.Services
                         var database = settings.ContainsKey("Database") ? settings["Database"]?.ToString() ?? "NetworkMonitoringDB" : "NetworkMonitoringDB";
                         var user = settings.ContainsKey("User") ? settings["User"]?.ToString() ?? "root" : "root";
 
-                        var isReachable = IsServerReachable(server, int.Parse(port));
+                        var isReachable = ConnectionService.IsMySqlServerReachable(server, int.Parse(port));
                         var isConnected = ConnectionService.IsMySqlOnline();
 
                         return new ConnectionInfo

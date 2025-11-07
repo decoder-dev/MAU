@@ -209,7 +209,7 @@ namespace NetworkMonitoringSystem.Core.Data
                     .HasDefaultValue(1);
 
                 // Ограничение: Priority от 1 до 4
-                entity.HasCheckConstraint("CK_MaintenanceRequests_Priority", "[Priority] >= 1 AND [Priority] <= 4");
+                entity.ToTable(t => t.HasCheckConstraint("CK_MaintenanceRequests_Priority", "[Priority] >= 1 AND [Priority] <= 4"));
             });
 
             // ========== КОНФИГУРАЦИЯ ТАБЛИЦЫ USERACTIVITIES ==========

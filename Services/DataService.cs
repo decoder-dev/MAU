@@ -93,11 +93,21 @@ namespace NetworkMonitoringSystem.Services
                 if (offlineDevice != null)
                 {
                     offlineDevice.Name = device.Name;
+                    offlineDevice.Description = device.Description;
                     offlineDevice.DeviceType = device.DeviceType;
+                    offlineDevice.IpAddress = device.IpAddress;
+                    offlineDevice.MacAddress = device.MacAddress;
+                    offlineDevice.Model = device.Model;
+                    offlineDevice.Manufacturer = device.Manufacturer;
+                    offlineDevice.SerialNumber = device.SerialNumber;
+                    offlineDevice.FirmwareVersion = device.FirmwareVersion;
                     offlineDevice.Status = device.Status;
                     offlineDevice.Location = device.Location;
                     offlineDevice.Building = device.Building;
                     offlineDevice.Room = device.Room;
+                    offlineDevice.Latitude = device.Latitude;
+                    offlineDevice.Longitude = device.Longitude;
+                    offlineDevice.LastSeen = device.LastSeen;
                     offlineDevice.UpdatedAt = DateTime.UtcNow;
                 }
                 else
@@ -321,16 +331,59 @@ namespace NetworkMonitoringSystem.Services
         }
 
         /// <summary>
+        /// Удалить заявку на обслуживание
+        /// </summary>
+        public static async Task<bool> DeleteMaintenanceRequestAsync(MaintenanceRequest request)
+        {
+            if (ConnectionService.IsMySqlOnline())
+            {
+                try
+                {
+                    Program.DbContext.MaintenanceRequests.Remove(request);
+                    await Program.DbContext.SaveChangesAsync();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Удаляем из офлайн базы
+                var offlineRequest = await Program.OfflineDbContext.MaintenanceRequests
+                    .FirstOrDefaultAsync(r => r.Id == request.Id);
+                
+                if (offlineRequest != null)
+                {
+                    Program.OfflineDbContext.MaintenanceRequests.Remove(offlineRequest);
+                    await Program.OfflineDbContext.SaveChangesAsync();
+                }
+
+                // Регистрируем операцию для синхронизации
+                var operation = new OfflineOperation
+                {
+                    OperationType = "DeleteRequest",
+                    EntityType = "MaintenanceRequest",
+                    EntityData = JsonSerializer.Serialize(new { RequestId = request.Id }),
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow
+                };
+                Program.OfflineDbContext.OfflineOperations.Add(operation);
+                await Program.OfflineDbContext.SaveChangesAsync();
+
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Получить количество ожидающих синхронизации операций
         /// </summary>
         public static async Task<int> GetPendingOperationsCountAsync()
         {
-            if (ConnectionService.IsMySqlOnline())
-            {
-                return await Program.OfflineDbContext.OfflineOperations
-                    .CountAsync(o => o.Status == "Pending");
-            }
-            return 0;
+            // Всегда проверяем офлайн базу, так как там хранятся операции для синхронизации
+            return await Program.OfflineDbContext.OfflineOperations
+                .CountAsync(o => o.Status == "Pending");
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace NetworkMonitoringSystem.Services
 {
     /// <summary>
-    /// ������ ������������� ������ ����� ������ � ������ ������
+    /// Сервис синхронизации данных между онлайн и офлайн базами
     /// </summary>
     public class SyncService
     {
@@ -20,7 +20,7 @@ namespace NetworkMonitoringSystem.Services
         }
 
         /// <summary>
-        /// ������������� ���� �������� �� ������ ����
+        /// Синхронизировать все операции из офлайн базы
         /// </summary>
         public async Task<int> SyncPendingOperationsAsync()
         {
@@ -87,13 +87,13 @@ namespace NetworkMonitoringSystem.Services
             var device = JsonSerializer.Deserialize<NetworkDevice>(op.EntityData);
             if (device != null)
             {
-                // ���������, �� ���������� �� ��� ����������
+                // Проверяем, что устройство не существует уже
                 var exists = await _onlineContext.NetworkDevices
                     .AnyAsync(d => d.IpAddress == device.IpAddress);
                 
                 if (!exists)
                 {
-                    device.Id = 0; // ����� ID ��� ������ ����������
+                    device.Id = 0; // Сброс ID для новой записи
                     _onlineContext.NetworkDevices.Add(device);
                     await _onlineContext.SaveChangesAsync();
                 }
@@ -110,13 +110,17 @@ namespace NetworkMonitoringSystem.Services
                 
                 if (existing != null)
                 {
-                    // ��������� ����
+                    // Обновляем поля
                     existing.Name = device.Name;
                     existing.DeviceType = device.DeviceType;
                     existing.Status = device.Status;
                     existing.Location = device.Location;
                     existing.Building = device.Building;
                     existing.Room = device.Room;
+                    existing.Description = device.Description;
+                    existing.MacAddress = device.MacAddress;
+                    existing.Model = device.Model;
+                    existing.Manufacturer = device.Manufacturer;
                     existing.UpdatedAt = DateTime.UtcNow;
                     await _onlineContext.SaveChangesAsync();
                 }
@@ -144,7 +148,7 @@ namespace NetworkMonitoringSystem.Services
             var request = JsonSerializer.Deserialize<MaintenanceRequest>(op.EntityData);
             if (request != null)
             {
-                request.Id = 0;
+                request.Id = 0; // Сброс ID для новой записи
                 _onlineContext.MaintenanceRequests.Add(request);
                 await _onlineContext.SaveChangesAsync();
             }
@@ -160,9 +164,14 @@ namespace NetworkMonitoringSystem.Services
                 
                 if (existing != null)
                 {
+                    existing.Title = request.Title;
+                    existing.Description = request.Description;
                     existing.Status = request.Status;
                     existing.Resolution = request.Resolution;
                     existing.AssignedTo = request.AssignedTo;
+                    existing.Priority = request.Priority;
+                    existing.CompletedAt = request.CompletedAt;
+                    existing.UpdatedAt = DateTime.UtcNow;
                     await _onlineContext.SaveChangesAsync();
                 }
             }
@@ -170,18 +179,48 @@ namespace NetworkMonitoringSystem.Services
 
         private async Task SyncCreateUserAsync(OfflineOperation op)
         {
-            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(op.EntityData);
-            if (data != null && data.ContainsKey("user") && data.ContainsKey("password"))
+            try
             {
-                var userJson = data["user"].ToString();
-                var password = data["password"].ToString();
-                var user = JsonSerializer.Deserialize<User>(userJson!);
-                
-                if (user != null && !await _onlineContext.Users.AnyAsync(u => u.Username == user.Username))
+                // Пытаемся десериализовать как объект с user и password
+                var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(op.EntityData);
+                if (data != null && data.ContainsKey("user") && data.ContainsKey("password"))
                 {
-                    user.SetPassword(password!);
-                    _onlineContext.Users.Add(user);
-                    await _onlineContext.SaveChangesAsync();
+                    var userJson = data["user"].GetRawText();
+                    var password = data["password"].GetString();
+                    var user = JsonSerializer.Deserialize<User>(userJson);
+                    
+                    if (user != null && !string.IsNullOrEmpty(password) && 
+                        !await _onlineContext.Users.AnyAsync(u => u.Username == user.Username))
+                    {
+                        user.SetPassword(password);
+                        user.Id = 0; // Сброс ID для новой записи
+                        _onlineContext.Users.Add(user);
+                        await _onlineContext.SaveChangesAsync();
+                    }
+                }
+            }
+            catch
+            {
+                // Если не удалось десериализовать как объект, пробуем другой формат
+                try
+                {
+                    var userWithPassword = JsonSerializer.Deserialize<Dictionary<string, string>>(op.EntityData);
+                    if (userWithPassword != null && userWithPassword.ContainsKey("password"))
+                    {
+                        // Альтернативный формат - пароль уже в объекте
+                        var user = JsonSerializer.Deserialize<User>(op.EntityData);
+                        if (user != null && !await _onlineContext.Users.AnyAsync(u => u.Username == user.Username))
+                        {
+                            user.SetPassword(userWithPassword["password"]);
+                            user.Id = 0;
+                            _onlineContext.Users.Add(user);
+                            await _onlineContext.SaveChangesAsync();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Ошибка при синхронизации создания пользователя: {ex.Message}");
                 }
             }
         }
@@ -224,7 +263,7 @@ namespace NetworkMonitoringSystem.Services
         }
 
         /// <summary>
-        /// ������������� ��������� �� ������ � ������ ����
+        /// Синхронизировать устройства из онлайн в офлайн базу
         /// </summary>
         public async Task SyncDevicesFromOnlineAsync()
         {
@@ -242,7 +281,7 @@ namespace NetworkMonitoringSystem.Services
                     
                     if (offlineDevice == null)
                     {
-                        // ������� ����� ��� ������ ����
+                        // Создаем копию для офлайн базы
                         var deviceCopy = new NetworkDevice
                         {
                             Name = device.Name,
@@ -264,8 +303,10 @@ namespace NetworkMonitoringSystem.Services
                     }
                     else
                     {
-                        // ��������� ������������
+                        // Обновляем существующие
                         offlineDevice.Name = device.Name;
+                        offlineDevice.Description = device.Description;
+                        offlineDevice.DeviceType = device.DeviceType;
                         offlineDevice.Status = device.Status;
                         offlineDevice.LastSeen = device.LastSeen;
                         offlineDevice.UpdatedAt = device.UpdatedAt;
@@ -276,9 +317,8 @@ namespace NetworkMonitoringSystem.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"������ ������������� ���������: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка синхронизации устройств: {ex.Message}");
             }
         }
     }
 }
-

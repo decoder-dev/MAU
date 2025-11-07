@@ -148,8 +148,8 @@ namespace NetworkMonitoringSystem
                         MessageBoxIcon.Information);
                 }
 
-                // Инициализация сервиса синхронизации
-                if (_syncService == null && ConnectionService.IsMySqlOnline())
+                // Инициализация сервиса синхронизации (всегда создаем, чтобы использовать при восстановлении подключения)
+                if (_syncService == null)
                 {
                     _syncService = new SyncService(DbContext, OfflineDbContext);
                 }
@@ -166,7 +166,11 @@ namespace NetworkMonitoringSystem
                             await _syncService.SyncPendingOperationsAsync();
                             await _syncService.SyncDevicesFromOnlineAsync();
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            // Логируем ошибку синхронизации, но не прерываем работу приложения
+                            System.Diagnostics.Debug.WriteLine($"Ошибка синхронизации: {ex.Message}");
+                        }
                     }
                 };
                 _syncTimer.Start();

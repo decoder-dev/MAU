@@ -498,7 +498,7 @@ namespace NetworkMonitoringSystem.UI.Forms
 
                 // Проверка доступности сервера
                 var port = int.TryParse(txtDbPort.Text, out var p) ? p : 3306;
-                var isReachable = DatabaseConnectionService.IsServerReachable(txtDbServer.Text, port);
+                var isReachable = ConnectionService.IsMySqlServerReachable(txtDbServer.Text, port);
                 
                 if (!isReachable)
                 {

@@ -512,7 +512,7 @@ namespace NetworkMonitoringSystem.UI.Forms
             }
         }
 
-        private void CreateMaintenanceRequest()
+        private async void CreateMaintenanceRequest()
         {
             if (dgvDevices.SelectedRows.Count == 0)
             {
@@ -521,7 +521,7 @@ namespace NetworkMonitoringSystem.UI.Forms
             }
 
             var deviceId = (int)dgvDevices.SelectedRows[0].Cells["Id"].Value;
-            var device = Services.DataService.GetDeviceByIdAsync(deviceId).Result;
+            var device = await Services.DataService.GetDeviceByIdAsync(deviceId);
             if (device != null)
             {
                 UserActivityLogger.Log("Request Create", $"Device: {device.Name}");
@@ -534,13 +534,13 @@ namespace NetworkMonitoringSystem.UI.Forms
             }
         }
 
-        private void ExportDevices()
+        private async void ExportDevices()
         {
             try
             {
                 UserActivityLogger.Log("Device Export", "Started");
                 var exportService = new Services.ExportService(Program.DbContext);
-                var csv = exportService.ExportDevicesToCsvAsync().Result;
+                var csv = await exportService.ExportDevicesToCsvAsync();
 
                 var saveDialog = new SaveFileDialog
                 {

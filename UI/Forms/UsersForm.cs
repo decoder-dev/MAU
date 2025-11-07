@@ -20,7 +20,7 @@ namespace NetworkMonitoringSystem.UI.Forms
         public UsersForm()
         {
             InitializeComponent();
-            LoadUsers().Wait();
+            _ = LoadUsers();
         }
 
         private void InitializeComponent()
